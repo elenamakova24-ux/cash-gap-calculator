@@ -1,0 +1,251 @@
+<!--
+  КАЛЬКУЛЯТОР КАССОВОГО РАЗРЫВА — для Tilda
+  =================================================
+  КУДА ВСТАВЛЯТЬ:
+  1. В Tilda добавьте блок "Другое" → T123 (HTML-код)
+  2. Откройте настройки блока → вкладка "Контент"
+  3. Вставьте ВЕСЬ код ниже целиком в поле кода
+  4. Сохраните и опубликуйте страницу
+
+  ЧТО НУЖНО ПОПРАВИТЬ ПЕРЕД ПУБЛИКАЦИЕЙ:
+  - Строка с классом "cta-link" внизу (поиск: ССЫЛКА_ЗАГЛУШКА)
+    Сейчас там href="#" — замените на реальную ссылку (бот, форма, WhatsApp)
+  - Цвета смотрите в блоке :root ниже — там 4 переменные, под ваш брендбук
+-->
+
+<style>
+  .cgc-wrap {
+    --cgc-text: #1A1A1A;
+    --cgc-text-muted: #6B6B66;
+    --cgc-border: #E3E1D9;
+    --cgc-bg-soft: #F4F1EA;
+    --cgc-accent: #0F6E56;
+    --cgc-accent-text: #FFFFFF;
+    --cgc-danger-bg: #FCEBEB;
+    --cgc-danger-border: #F0997B;
+    --cgc-danger-text: #791F1F;
+    --cgc-warning-bg: #FAEEDA;
+    --cgc-warning-border: #EF9F27;
+    --cgc-warning-text: #633806;
+    --cgc-success-bg: #EAF3DE;
+    --cgc-success-border: #97C459;
+    --cgc-success-text: #27500A;
+
+    max-width: 520px;
+    margin: 0 auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--cgc-text);
+    box-sizing: border-box;
+  }
+  .cgc-wrap * { box-sizing: border-box; }
+
+  .cgc-title-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .cgc-title { font-size: 19px; font-weight: 600; line-height: 1.3; }
+  .cgc-subtitle { font-size: 14px; color: var(--cgc-text-muted); margin: 0 0 24px; line-height: 1.6; }
+
+  .cgc-field { margin-bottom: 14px; }
+  .cgc-label { font-size: 13px; color: var(--cgc-text-muted); display: block; margin-bottom: 5px; }
+  .cgc-input {
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--cgc-border);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--cgc-text);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+  .cgc-input:focus { border-color: var(--cgc-accent); }
+
+  .cgc-btn {
+    width: 100%;
+    height: 46px;
+    margin-top: 8px;
+    background: var(--cgc-accent);
+    color: var(--cgc-accent-text);
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .cgc-btn:hover { opacity: 0.9; }
+  .cgc-btn:active { transform: scale(0.99); }
+
+  .cgc-result { display: none; margin-top: 24px; }
+
+  .cgc-result-card {
+    border-radius: 12px;
+    padding: 18px 20px;
+    border: 1px solid;
+  }
+  .cgc-result-card.danger { background: var(--cgc-danger-bg); border-color: var(--cgc-danger-border); }
+  .cgc-result-card.warning { background: var(--cgc-warning-bg); border-color: var(--cgc-warning-border); }
+  .cgc-result-card.success { background: var(--cgc-success-bg); border-color: var(--cgc-success-border); }
+
+  .cgc-result-head { font-weight: 600; font-size: 15px; margin: 0 0 8px; line-height: 1.4; }
+  .cgc-result-card.danger .cgc-result-head { color: var(--cgc-danger-text); }
+  .cgc-result-card.warning .cgc-result-head { color: var(--cgc-warning-text); }
+  .cgc-result-card.success .cgc-result-head { color: var(--cgc-success-text); }
+
+  .cgc-result-body { font-size: 14px; color: var(--cgc-text-muted); margin: 0; line-height: 1.6; }
+
+  .cgc-cta-card {
+    margin-top: 12px;
+    padding: 18px 20px;
+    background: var(--cgc-bg-soft);
+    border-radius: 12px;
+  }
+  .cgc-cta-text { font-size: 14px; margin: 0 0 10px; line-height: 1.6; }
+  .cgc-cta-bold { font-weight: 600; }
+
+  .cgc-cta-link {
+    display: inline-block;
+    width: 100%;
+    text-align: center;
+    height: 46px;
+    line-height: 46px;
+    background: var(--cgc-accent);
+    color: var(--cgc-accent-text) !important;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none !important;
+    box-sizing: border-box;
+  }
+  .cgc-cta-link:hover { opacity: 0.9; }
+
+  .cgc-empty {
+    background: var(--cgc-bg-soft);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: var(--cgc-text-muted);
+  }
+
+  @media (max-width: 480px) {
+    .cgc-title { font-size: 17px; }
+  }
+</style>
+
+<div class="cgc-wrap">
+
+  <div class="cgc-title-row">
+    <span class="cgc-title">Когда у вас может не хватить денег</span>
+  </div>
+  <p class="cgc-subtitle">5 цифр — и вы увидите то, что обычно видно только постфактум, когда уже поздно.</p>
+
+  <div class="cgc-field">
+    <label class="cgc-label" for="cgc-balance">Сколько денег на всех счетах сейчас?</label>
+    <input class="cgc-input" type="number" id="cgc-balance" placeholder="например, 350000" />
+  </div>
+
+  <div class="cgc-field">
+    <label class="cgc-label" for="cgc-income">Сколько вы точно получите от клиентов за 30 дней?</label>
+    <input class="cgc-input" type="number" id="cgc-income" placeholder="только то, в чём уверены" />
+  </div>
+
+  <div class="cgc-field">
+    <label class="cgc-label" for="cgc-expenses">Сколько обязательных расходов за эти 30 дней?</label>
+    <input class="cgc-input" type="number" id="cgc-expenses" placeholder="аренда, зарплата, налоги, поставщики" />
+  </div>
+
+  <div class="cgc-field">
+    <label class="cgc-label" for="cgc-bigdate">Дата ближайшего крупного платежа, который пугает</label>
+    <input class="cgc-input" type="date" id="cgc-bigdate" />
+  </div>
+
+  <div class="cgc-field">
+    <label class="cgc-label" for="cgc-bigsum">Сумма этого платежа</label>
+    <input class="cgc-input" type="number" id="cgc-bigsum" placeholder="например, зарплата 5 числа" />
+  </div>
+
+  <button class="cgc-btn" id="cgc-calc-btn" type="button">Посчитать</button>
+
+  <div class="cgc-result" id="cgc-result"></div>
+
+</div>
+
+<script>
+(function () {
+  function fmt(n) {
+    return Math.round(n).toLocaleString('ru-RU');
+  }
+
+  function daysUntil(dateStr) {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var target = new Date(dateStr);
+    target.setHours(0, 0, 0, 0);
+    return Math.round((target - today) / 86400000);
+  }
+
+  function formatDateRu(dateStr) {
+    var d = new Date(dateStr);
+    var months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    return d.getDate() + ' ' + months[d.getMonth()];
+  }
+
+  var btn = document.getElementById('cgc-calc-btn');
+  btn.addEventListener('click', function () {
+    var balance = parseFloat(document.getElementById('cgc-balance').value) || 0;
+    var income = parseFloat(document.getElementById('cgc-income').value) || 0;
+    var expenses = parseFloat(document.getElementById('cgc-expenses').value) || 0;
+    var bigDate = document.getElementById('cgc-bigdate').value;
+    var bigSum = parseFloat(document.getElementById('cgc-bigsum').value) || 0;
+
+    var wrap = document.getElementById('cgc-result');
+
+    if (!bigDate) {
+      wrap.style.display = 'block';
+      wrap.innerHTML = '<div class="cgc-empty">Укажите дату ближайшего крупного платежа, чтобы увидеть результат</div>';
+      return;
+    }
+
+    var days = daysUntil(bigDate);
+    var horizon = 30;
+    var fraction = Math.min(Math.max(days, 0), horizon) / horizon;
+
+    var projectedBalance = balance + (income * fraction) - (expenses * fraction);
+    var afterPayment = projectedBalance - bigSum;
+    var dateLabel = formatDateRu(bigDate);
+
+    var html = '';
+
+    if (afterPayment < 0) {
+      var shortfall = Math.abs(afterPayment);
+      html = '<div class="cgc-result-card danger">'
+        + '<p class="cgc-result-head">По вашим цифрам, ' + dateLabel + ' может не хватить ' + fmt(shortfall) + '</p>'
+        + '<p class="cgc-result-body">Это не приговор — это сигнал, что у вас есть время среагировать: ускорить дебиторку, сдвинуть платёж или найти источник. Но только если вы увидели это сейчас, а не в день платежа с пустым счётом.</p>'
+        + '</div>';
+    } else {
+      var cushion = afterPayment;
+      var cushionRatio = bigSum > 0 ? cushion / bigSum : 1;
+      if (cushionRatio < 0.15) {
+        html = '<div class="cgc-result-card warning">'
+          + '<p class="cgc-result-head">Зона риска: после ' + dateLabel + ' останется всего ' + fmt(cushion) + '</p>'
+          + '<p class="cgc-result-body">Разрыв возможен при малейшей задержке оплаты от клиента. Подушки почти нет — одно перенесённое поступление, и сценарий меняется.</p>'
+          + '</div>';
+      } else {
+        html = '<div class="cgc-result-card success">'
+          + '<p class="cgc-result-head">На горизонте 30 дней разрыва не видно</p>'
+          + '<p class="cgc-result-body">Вопрос на засыпку: вы считали это сейчас в первый раз — или у вас так каждый месяц? Если в первый — вы только что убрали руки от глаз. Это сработает, пока не сработает.</p>'
+          + '</div>';
+      }
+    }
+
+    html += '<div class="cgc-cta-card">'
+      + '<p class="cgc-cta-text">Это разовый снимок на сегодня. А что будет через месяц, когда придёт новый клиент, вырастут расходы или сдвинется оплата?</p>'
+      + '<p class="cgc-cta-text"><span class="cgc-cta-bold">«Деньги под контролем»</span> — та же логика, но не разовая прикидка на коленке, а живая панель, которая обновляется и показывает не только кассовые разрывы, но и где реально теряется прибыль. Соберём за 7 рабочих дней под ваш бизнес.</p>'
+      /* ССЫЛКА_ЗАГЛУШКА: замените href="#" на реальную ссылку (бот / форма / WhatsApp) */
+      + '<a href="#" class="cgc-cta-link" target="_blank" rel="noopener">Хочу такую панель</a>'
+      + '</div>';
+
+    wrap.style.display = 'block';
+    wrap.innerHTML = html;
+  });
+})();
+</script>
