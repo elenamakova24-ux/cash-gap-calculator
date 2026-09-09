@@ -1,18 +1,12 @@
-<!--
-  КАЛЬКУЛЯТОР КАССОВОГО РАЗРЫВА — для Tilda
-  =================================================
-  КУДА ВСТАВЛЯТЬ:
-  1. В Tilda добавьте блок "Другое" → T123 (HTML-код)
-  2. Откройте настройки блока → вкладка "Контент"
-  3. Вставьте ВЕСЬ код ниже целиком в поле кода
-  4. Сохраните и опубликуйте страницу
-
-  ЧТО НУЖНО ПОПРАВИТЬ ПЕРЕД ПУБЛИКАЦИЕЙ:
-  - Строка с классом "cta-link" внизу (поиск: ССЫЛКА_ЗАГЛУШКА)
-    Сейчас там href="#" — замените на реальную ссылку (бот, форма, WhatsApp)
-  - Цвета смотрите в блоке :root ниже — там 4 переменные, под ваш брендбук
--->
-
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Хватит ли денег на платёж | Деньги под контролем</title>
+<meta name="description" content="Посчитайте остаток после ближайшего платежа с учётом поступлений и других расходов до его даты">
+</head>
+<body style="margin:0;padding:24px 16px">
 <style>
   .cgc-wrap {
     --cgc-text: #1A1A1A;
@@ -134,118 +128,99 @@
 <div class="cgc-wrap">
 
   <div class="cgc-title-row">
-    <span class="cgc-title">Когда у вас может не хватить денег</span>
+    <span class="cgc-title">Хватит ли денег на ближайший платёж</span>
   </div>
-  <p class="cgc-subtitle">5 цифр — и вы увидите то, что обычно видно только постфактум, когда уже поздно.</p>
+  <p class="cgc-subtitle">Выберите дату платежа. Учитывайте только деньги, которые поступят или уйдут до него, включая операции в тот же день до оплаты. Суммы указывайте в одной валюте</p>
 
   <div class="cgc-field">
     <label class="cgc-label" for="cgc-balance">Сколько денег на всех счетах сейчас?</label>
-    <input class="cgc-input" type="number" id="cgc-balance" placeholder="например, 350000" />
+    <input class="cgc-input" type="number" min="0" step="0.01" id="cgc-balance" placeholder="например, 350000" />
   </div>
 
   <div class="cgc-field">
-    <label class="cgc-label" for="cgc-income">Сколько вы точно получите от клиентов за 30 дней?</label>
-    <input class="cgc-input" type="number" id="cgc-income" placeholder="только то, в чём уверены" />
+    <label class="cgc-label" for="cgc-income">Сколько поступит до выбранного платежа?</label>
+    <input class="cgc-input" type="number" min="0" step="0.01" id="cgc-income" placeholder="без оплат, ожидаемых после платежа" />
   </div>
 
   <div class="cgc-field">
-    <label class="cgc-label" for="cgc-expenses">Сколько обязательных расходов за эти 30 дней?</label>
-    <input class="cgc-input" type="number" id="cgc-expenses" placeholder="аренда, зарплата, налоги, поставщики" />
+    <label class="cgc-label" for="cgc-expenses">Сколько других расходов предстоит до этого платежа?</label>
+    <input class="cgc-input" type="number" min="0" step="0.01" id="cgc-expenses" placeholder="не включайте платёж, указанный ниже" />
   </div>
 
   <div class="cgc-field">
-    <label class="cgc-label" for="cgc-bigdate">Дата ближайшего крупного платежа, который пугает</label>
+    <label class="cgc-label" for="cgc-bigdate">Дата ближайшего крупного платежа</label>
     <input class="cgc-input" type="date" id="cgc-bigdate" />
   </div>
 
   <div class="cgc-field">
     <label class="cgc-label" for="cgc-bigsum">Сумма этого платежа</label>
-    <input class="cgc-input" type="number" id="cgc-bigsum" placeholder="например, зарплата 5 числа" />
+    <input class="cgc-input" type="number" min="0" step="0.01" id="cgc-bigsum" placeholder="например, зарплата 5 числа" />
   </div>
 
   <button class="cgc-btn" id="cgc-calc-btn" type="button">Посчитать</button>
 
-  <div class="cgc-result" id="cgc-result"></div>
+  <div class="cgc-result" id="cgc-result" aria-live="polite"></div>
 
 </div>
 
 <script>
 (function () {
   function fmt(n) {
-    return Math.round(n).toLocaleString('ru-RU');
+    return n.toLocaleString('ru-RU', {minimumFractionDigits: 0, maximumFractionDigits: 2});
   }
-
-  function daysUntil(dateStr) {
-    var today = new Date();
-    today.setHours(0, 0, 0, 0);
-    var target = new Date(dateStr);
-    target.setHours(0, 0, 0, 0);
-    return Math.round((target - today) / 86400000);
-  }
-
-  function formatDateRu(dateStr) {
-    var d = new Date(dateStr);
-    var months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-    return d.getDate() + ' ' + months[d.getMonth()];
-  }
-
   var btn = document.getElementById('cgc-calc-btn');
   btn.addEventListener('click', function () {
-    var balance = parseFloat(document.getElementById('cgc-balance').value) || 0;
-    var income = parseFloat(document.getElementById('cgc-income').value) || 0;
-    var expenses = parseFloat(document.getElementById('cgc-expenses').value) || 0;
-    var bigDate = document.getElementById('cgc-bigdate').value;
-    var bigSum = parseFloat(document.getElementById('cgc-bigsum').value) || 0;
-
     var wrap = document.getElementById('cgc-result');
-
-    if (!bigDate) {
+    function error(message) {
       wrap.style.display = 'block';
-      wrap.innerHTML = '<div class="cgc-empty">Укажите дату ближайшего крупного платежа, чтобы увидеть результат</div>';
+      wrap.innerHTML = '<div class="cgc-empty">' + message + '</div>';
+    }
+    var ids = ['balance', 'income', 'expenses', 'bigsum'];
+    var values = ids.map(function (id) { return document.getElementById('cgc-' + id).value; });
+    if (values.some(function (value) { return value.trim() === ''; })) {
+      error('Заполните все суммы. Если поступлений или других расходов нет, укажите 0');
       return;
     }
-
-    var days = daysUntil(bigDate);
-    var horizon = 30;
-    var fraction = Math.min(Math.max(days, 0), horizon) / horizon;
-
-    var projectedBalance = balance + (income * fraction) - (expenses * fraction);
-    var afterPayment = projectedBalance - bigSum;
-    var dateLabel = formatDateRu(bigDate);
-
-    var html = '';
-
-    if (afterPayment < 0) {
-      var shortfall = Math.abs(afterPayment);
-      html = '<div class="cgc-result-card danger">'
-        + '<p class="cgc-result-head">По вашим цифрам, ' + dateLabel + ' может не хватить ' + fmt(shortfall) + '</p>'
-        + '<p class="cgc-result-body">Это не приговор — это сигнал, что у вас есть время среагировать: ускорить дебиторку, сдвинуть платёж или найти источник. Но только если вы увидели это сейчас, а не в день платежа с пустым счётом.</p>'
-        + '</div>';
-    } else {
-      var cushion = afterPayment;
-      var cushionRatio = bigSum > 0 ? cushion / bigSum : 1;
-      if (cushionRatio < 0.15) {
-        html = '<div class="cgc-result-card warning">'
-          + '<p class="cgc-result-head">Зона риска: после ' + dateLabel + ' останется всего ' + fmt(cushion) + '</p>'
-          + '<p class="cgc-result-body">Разрыв возможен при малейшей задержке оплаты от клиента. Подушки почти нет — одно перенесённое поступление, и сценарий меняется.</p>'
-          + '</div>';
-      } else {
-        html = '<div class="cgc-result-card success">'
-          + '<p class="cgc-result-head">На горизонте 30 дней разрыва не видно</p>'
-          + '<p class="cgc-result-body">Вопрос на засыпку: вы считали это сейчас в первый раз — или у вас так каждый месяц? Если в первый — вы только что убрали руки от глаз. Это сработает, пока не сработает.</p>'
-          + '</div>';
-      }
+    var amounts = values.map(Number);
+    if (amounts.some(function (value) { return !Number.isFinite(value) || value < 0; })) {
+      error('Укажите неотрицательные конечные суммы');
+      return;
     }
-
-    html += '<div class="cgc-cta-card">'
-      + '<p class="cgc-cta-text">Это разовый снимок на сегодня. А что будет через месяц, когда придёт новый клиент, вырастут расходы или сдвинется оплата?</p>'
-      + '<p class="cgc-cta-text"><span class="cgc-cta-bold">«Деньги под контролем»</span> — та же логика, но не разовая прикидка на коленке, а живая панель, которая обновляется и показывает не только кассовые разрывы, но и где реально теряется прибыль. Соберём за 7 рабочих дней под ваш бизнес.</p>'
-      /* ССЫЛКА_ЗАГЛУШКА: замените href="#" на реальную ссылку (бот / форма / WhatsApp) */
-      + '<a href="#" class="cgc-cta-link" target="_blank" rel="noopener">Хочу такую панель</a>'
+    if (amounts[3] <= 0) {
+      error('Сумма выбранного платежа должна быть больше нуля');
+      return;
+    }
+    var bigDate = document.getElementById('cgc-bigdate').value;
+    var target = new Date(bigDate + 'T00:00:00');
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (!bigDate || !Number.isFinite(target.getTime()) || target < today) {
+      error('Выберите сегодняшнюю или будущую дату платежа');
+      return;
+    }
+    var afterPayment = Math.round((amounts[0] + amounts[1] - amounts[2] - amounts[3]) * 100) / 100;
+    if (!Number.isFinite(afterPayment)) {
+      error('Суммы слишком велики для расчёта');
+      return;
+    }
+    var dateLabel = target.toLocaleDateString('ru-RU', {day: 'numeric', month: 'long', year: 'numeric'});
+    var kind = afterPayment < 0 ? 'danger' : afterPayment === 0 ? 'warning' : 'success';
+    var headline = afterPayment < 0
+      ? 'К платежу ' + dateLabel + ' не хватает ' + fmt(-afterPayment)
+      : 'После платежа ' + dateLabel + ' останется ' + fmt(afterPayment);
+    var html = '<div class="cgc-result-card ' + kind + '">'
+      + '<p class="cgc-result-head">' + headline + '</p>'
+      + '<p class="cgc-result-body">Остаток сейчас + поступления до платежа - другие расходы до него - сам платёж. Результат в той же валюте, что и введённые суммы</p>'
+      + '</div>'
+      + '<div class="cgc-cta-card">'
+      + '<p class="cgc-cta-text">Это расчёт на одну дату. Он не проверяет остаток в каждый день до неё. Если клиент заплатит позже, пересчитайте результат без этой суммы</p>'
+      + '<p class="cgc-cta-text">Неясно, какие поступления или расходы учесть? Можно обсудить свою ситуацию с Еленой в Telegram</p>'
+      + '<a href="https://t.me/makova_ai" class="cgc-cta-link" target="_blank" rel="noopener noreferrer">Обсудить свою ситуацию</a>'
       + '</div>';
-
     wrap.style.display = 'block';
     wrap.innerHTML = html;
   });
 })();
 </script>
+</body>
+</html>
